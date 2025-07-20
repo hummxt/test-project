@@ -1,29 +1,26 @@
-<template>
-  <div>
-    <h2>Backend data test:</h2>
-    <h3>Data:</h3>
-    <pre>{{ data }}</pre>
-    <div v-if="error" style="color: red">{{ error }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-const data = ref<string | null>(null)
+interface User {
+  id: number
+  name: string
+  email: string
+}
+
+const users = ref<User[]>([])
 const error = ref('')
 
 async function fetchData() {
   try {
-    const response = await fetch('https://41aa5e9d0a17.ngrok-free.app/api/items')
+    const response = await fetch('http://localhost:8080/users')
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`)
     }
     const json = await response.json()
-    data.value = JSON.stringify(json, null, 2)
+    users.value = json 
   } catch (err: any) {
-    console.error('xeta:', err)
-    error.value = 'xeta'
+    console.error('Error:', err)
+    error.value = 'Could not fetch users.'
   }
 }
 
@@ -32,11 +29,29 @@ onMounted(() => {
 })
 </script>
 
+<template>
+  <div>
+    <h2>Backend data test:</h2>
+
+    <div v-if="error" style="color: red">{{ error }}</div>
+
+    <ul v-if="users.length > 0">
+      <li v-for="user in users" :key="user.id">
+        <strong>{{ user.name }}</strong> — {{ user.email }}
+      </li>
+    </ul>
+
+    <div v-else-if="!error">Loading...</div>
+  </div>
+</template>
+
 <style scoped>
-pre {
-  background-color: #f4f4f4;
-  padding: 10px;
-  border-radius: 4px;
-  white-space: pre-wrap;
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  padding: 6px 0;
 }
 </style>
